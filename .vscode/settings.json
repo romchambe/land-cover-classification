@@ -1,0 +1,8 @@
+{
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.autopep8"
+  },
+  "python.analysis.extraPaths": [
+    "/Users/romchambe/miniconda3/envs/ml/lib/python3.11/site-packages"
+  ],
+}
