@@ -3,7 +3,7 @@ import numpy as np
 from os import listdir
 from os.path import isfile, join
 
-LAND_COVER = np.array([
+LAND_COVER = [
     ['AnnualCrop', 0],
     ['Forest', 1],
     ['HerbaceousVegetation', 2],
@@ -14,17 +14,9 @@ LAND_COVER = np.array([
     ['Residential', 7],
     ['River', 8],
     ['SeaLake', 9]
-])
+]
 
 INTERMEDIARY_FILE_PATH = "training_data/labelled_dataset.npz"
-
-
-def one_hot_encoding(labels, dimension):
-    # Define a one-hot variable for an all-zero vector
-    one_hot_labels = labels[..., 1, None].astype(
-        np.int16) == np.arange(dimension)[None]
-
-    return one_hot_labels.astype(np.float64)
 
 
 def image_to_array(path):
@@ -35,8 +27,6 @@ def image_to_array(path):
 def preprocess_data():
     image_dataset = []
     label_dataset = []
-
-    encoded_labels = one_hot_encoding(LAND_COVER, len(LAND_COVER))
 
     # Convert
     for land_cover_class, land_cover_code in LAND_COVER:
@@ -49,7 +39,7 @@ def preprocess_data():
                     np.array(image_to_array(image_path))
                 )
 
-                label_dataset.append(encoded_labels[int(land_cover_code)])
+                label_dataset.append(int(land_cover_code))
 
     # Shuffle data and labels using the same permutation and slice the first 5000 results
     permutation = np.random.permutation(len(image_dataset))
@@ -69,6 +59,3 @@ def preprocess_data():
             x_train.shape, y_train.shape
         )
     )
-
-
-preprocess_data()
