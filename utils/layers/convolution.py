@@ -8,9 +8,13 @@ class ConvolutionLayer:
 
         # Generate random filters of shape (kernel_num, kernel_size, kernel_size, colors).
         self.kernels = np.random.randn(
-            kernel_num, kernel_size, kernel_size, 3)
+            kernel_num,
+            kernel_size,
+            kernel_size,
+            3
+        )
 
-    def forward_prop(self, image):
+    def forward(self, image):
         # Extract image height and width
         image_h, image_w, image_c = image.shape
 
@@ -18,6 +22,7 @@ class ConvolutionLayer:
         output_h = image_h - self.kernel_size + 1
         output_w = image_w - self.kernel_size + 1
 
+        # Shape the output
         convolution_output = np.zeros(
             (output_h,
              output_w,
