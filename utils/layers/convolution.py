@@ -12,15 +12,23 @@ class ConvolutionLayer:
             kernel_size,
             kernel_size,
             3
-        )
+        ) / (kernel_size**2)
 
-    def forward(self, image):
-        # Extract image height and width
-        image_h, image_w, image_c = image.shape
+    def get_output_shape_from_image(self):
+        image_h, image_w, image_c = self.image.shape
 
         # Initialize the convolution output volume of the correct size
         output_h = image_h - self.kernel_size + 1
         output_w = image_w - self.kernel_size + 1
+
+        return output_h, output_w, image_c
+
+    def forward(self, image):
+        # Save for backward propagation
+        self.image = image
+
+        # Initialize the convolution output volume of the correct size
+        output_h, output_w, image_c = self.get_output_shape_from_image()
 
         # Shape the output
         convolution_output = np.zeros(
@@ -30,10 +38,44 @@ class ConvolutionLayer:
              self.kernel_num)
         )
 
-        for i in range(output_h):
-            for j in range(output_w):
-                for c in range(3):  # Iterate over the RGB channels
-                    convolution_output[i, j, c] = np.sum(
-                        image[i:i+self.kernel_size, j:j+self.kernel_size, c] * self.kernels[:, :, :, c])
+        for h in range(output_h):
+            for w in range(output_w):
+                for c in range(image_c):
+                    for kernel in self.kernels:
+                        # Create a region in the input from each cell of the output
+                        region = self.image[
+                            h:(h + self.kernel_size),
+                            w:(w + self.kernel_size),
+                            c
+                        ]
+
+                        convolution_output[h, w, c] = np.sum(
+                            region * kernel[:, :, c]
+                        )
 
         return convolution_output
+
+    def backward(self, dE_dY, alpha):
+
+        output_h, output_w, image_c = self.get_output_shape_from_image()
+        # Initialize gradients according to the shape of kernels
+        dE_dk = np.zeros(self.kernels.shape)
+
+        for h in range(output_h):
+            for w in range(output_w):
+                for c in range(image_c):
+                    # Create a region in the input from each cell of the output
+                    region = self.image[
+                        h:(h + self.kernel_size),
+                        w:(w + self.kernel_size),
+                        c
+                    ]
+
+                    for kernel in range(self.kernel_num):
+                        dE_dk[kernel, :, :, c] += region * \
+                            dE_dY[h, w, c, kernel]
+
+        # Update the parameters
+        self.kernels -= alpha*dE_dk
+
+        return dE_dk

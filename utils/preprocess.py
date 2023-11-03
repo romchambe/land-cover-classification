@@ -41,11 +41,8 @@ def preprocess_data():
 
                 label_dataset.append(int(land_cover_code))
 
-    # Shuffle data and labels using the same permutation and slice the first 5000 results
-    permutation = np.random.permutation(len(image_dataset))
-
-    x_train = np.array(image_dataset)[permutation][:5000]
-    y_train = np.array(label_dataset)[permutation][:5000]
+    x_train = np.array(image_dataset)
+    y_train = np.array(label_dataset)
 
     # Save to a file
     np.savez(
