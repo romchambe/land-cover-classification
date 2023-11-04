@@ -21,7 +21,7 @@ INTERMEDIARY_FILE_PATH = "training_data/labelled_dataset.npz"
 
 def image_to_array(path):
     image = Image.open(path)
-    return np.array(image) / 255
+    return np.array(image) / 255.0
 
 
 def preprocess_data():

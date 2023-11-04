@@ -1,28 +1,22 @@
 import numpy as np
 
 
-class SoftmaxLayer:
-    def __init__(self, input_units, output_units):
+class Softmax:
+    def __init__(self, input_size, output_size):
         # Initiallize weights and biases
-        self.weight = np.random.randn(input_units, output_units)/input_units
-        self.bias = np.zeros(output_units)
+        self.weight = np.random.randn(input_size, output_size)/input_size
+        self.bias = np.zeros(output_size)
 
-    def forward(self, image):
-        self.original_shape = image.shape
+    def forward(self, input):
+        self.original = input
 
-        # Flatten the image
-        image_flattened = image.flatten()
-
-        # Save it for backward propagation
-        self.flattened = image_flattened
-
-        # Perform matrix multiplication and add bias
-        first_output = np.dot(image_flattened, self.weight) + self.bias
-        self.output = first_output
+        # Densify
+        dense_output = np.dot(input, self.weight) + self.bias
+        self.output = dense_output
 
         # Apply softmax activation
-        softmax_output = np.exp(first_output) / \
-            np.sum(np.exp(first_output), axis=0)
+        softmax_output = np.exp(dense_output) / \
+            np.sum(np.exp(dense_output), axis=0)
 
         return softmax_output
 
@@ -40,7 +34,7 @@ class SoftmaxLayer:
                 (S_total - transformation_eq[i]) / (S_total**2)
 
             # Compute gradients of output Z with respect to weight w, bias b, input
-            dZ_dw = self.flattened
+            dZ_dw = self.original
             dZ_db = 1
             dZ_dX = self.weight
 
@@ -56,4 +50,4 @@ class SoftmaxLayer:
             self.weight -= alpha*dE_dw
             self.bias -= alpha*dE_db
 
-            return dE_dX.reshape(self.original_shape)
+            return dE_dX

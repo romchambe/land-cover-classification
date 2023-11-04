@@ -1,14 +1,16 @@
 import numpy as np
 from .preprocess import INTERMEDIARY_FILE_PATH
 
-from .layers.convolution import ConvolutionLayer
-from .layers.max_pooling import MaxPoolingLayer
-from .layers.soft_max import SoftmaxLayer
+from .layers.convolution import Convolution
+from .layers.max_pooling import MaxPooling
+from .layers.soft_max import Softmax
+from .layers.reshape import Reshape
 
 layers = [
-    ConvolutionLayer(12, 5),  # 60x60x3x12
-    MaxPoolingLayer(6),  # 10x10x3x12
-    SoftmaxLayer(10*10*3*12, 10)
+    Convolution(12, 3, 3),  # 62*62*12
+    MaxPooling(3),  # 20*20*12
+    Reshape(),
+    Softmax(20*20*12, 10)
 ]
 
 
@@ -24,30 +26,25 @@ def propagate_forward(image, label, layers):
     return output, loss, accuracy
 
 
-def propagate_backward(gradient, layers, alpha=0.05):
+def propagate_backward(gradient, layers, learning_rate):
     grad_back = gradient
 
     for layer in layers[::-1]:
-        if type(layer) in [ConvolutionLayer, SoftmaxLayer]:
-            grad_back = layer.backward(grad_back, alpha)
-            # print(type(layer), grad_back)
-        elif type(layer) == MaxPoolingLayer:
-            grad_back = layer.backward(grad_back)
-            # print(type(layer), grad_back)
+        grad_back = layer.backward(grad_back, learning_rate)
 
     return grad_back
 
 
-def train_on_image(image, label, layers, alpha=0.05):
+def train_on_image(image, label, layers, learning_rate):
     # Forward step
     output, loss, accuracy = propagate_forward(image, label, layers)
 
-    # Initial gradient
-    gradient = np.zeros(10)
-    gradient[label] = -1/output[label]
+    # Initiate gradients with the derivative of the loss
+    gradients = np.zeros(10)
+    gradients[label] = -1 / output[label]
 
     # Backprop step
-    propagate_backward(gradient, layers, alpha)
+    gradient_back = propagate_backward(gradients, layers, learning_rate)
 
     return loss, accuracy
 
@@ -58,28 +55,38 @@ def train():
     x_train = npzfile['x_train']
     y_train = npzfile['y_train']
 
-    # Shuffle data and labels using the same permutation and slice the first 5000 results
-    permutation = np.random.permutation(len(x_train))
+    for epoch in range(15):
+        # Shuffle data and labels using the same permutation and slice the first 5000 results
+        permutation = np.random.permutation(len(x_train))
 
-    x_train = np.array(x_train)[permutation][:5000]
-    y_train = np.array(y_train)[permutation][:5000]
+        x_train = np.array(x_train)[permutation][:1000]
+        y_train = np.array(y_train)[permutation][:1000]
 
-    accuracy, loss = 0, 0
-    for i in range(len(x_train)):
+        accuracy, loss = 0, 0
 
-        if i % 100 == 0:
-            print(f"""Image #{i}. Over the past 100 images : 
-              - Average loss : {loss / 100}
-              - Accuracy : {accuracy} %
-            """)
+        print(f"Epoch #{epoch + 1} ----- ")
 
-            loss, accuracy = 0, 0
+        for i in range(len(x_train)):
+            if i % 100 == 0:
+                print(f"""Image #{i}. Over the past 100 images : 
+                - Average loss : {loss / 10}
+                - Accuracy : {accuracy} / 10
+              """)
 
-        image = x_train[i]
-        label = y_train[i]
-        # if (i < 2):
-        loss_on_image, accurate = train_on_image(image, label, layers)
-        loss += loss_on_image
-        accuracy += accurate
-        # else:
-        #     break
+                loss, accuracy = 0, 0
+
+            image = x_train[i]
+            label = y_train[i]
+
+            loss_on_image, accurate = train_on_image(
+                image,
+                label,
+                layers,
+                0.015
+            )
+
+            loss += loss_on_image
+            accuracy += accurate
+
+        print(f"Achieved accuracy {accuracy / 10} %")
+        print(f"Average loss {loss / 1000}")
