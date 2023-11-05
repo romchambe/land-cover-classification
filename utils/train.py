@@ -37,14 +37,14 @@ def propagate_backward(gradient, layers, learning_rate):
 
 def train_on_image(image, label, layers, learning_rate):
     # Forward step
-    output, loss, accuracy = propagate_forward(image, label, layers)
+    prediction, loss, accuracy = propagate_forward(image, label, layers)
 
-    # Initiate gradients with the derivative of the loss
-    gradients = np.zeros(10)
-    gradients[label] = -1 / output[label]
+    # Gradients of loss function (cross-entropy)
+    loss_gradients = np.zeros(10)
+    loss_gradients[label] = -1 / prediction[label]
 
     # Backprop step
-    gradient_back = propagate_backward(gradients, layers, learning_rate)
+    propagate_backward(loss_gradients, layers, learning_rate)
 
     return loss, accuracy
 
@@ -67,14 +67,6 @@ def train():
         print(f"Epoch #{epoch + 1} ----- ")
 
         for i in range(len(x_train)):
-            if i % 100 == 0:
-                print(f"""Image #{i}. Over the past 100 images : 
-                - Average loss : {loss / 10}
-                - Accuracy : {accuracy} / 10
-              """)
-
-                loss, accuracy = 0, 0
-
             image = x_train[i]
             label = y_train[i]
 
@@ -88,5 +80,5 @@ def train():
             loss += loss_on_image
             accuracy += accurate
 
-        print(f"Achieved accuracy {accuracy / 10} %")
-        print(f"Average loss {loss / 1000}")
+        print(f"Achieved accuracy : {accuracy / 10} %")
+        print(f"Average loss : {loss / 1000}")

@@ -47,6 +47,7 @@ class Convolution:
                             c
                         ]
 
+                        # We do a matrix correlation between the kernel and the region
                         convolution_output[k, h, w] += np.sum(
                             region * self.kernels[k, c, :, :]
                         )
