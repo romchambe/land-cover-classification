@@ -1,10 +1,10 @@
 class Reshape:
-    def forward(self, input):
-        self.original_shape = input.shape
+    def __init__(self, input_shape, output_shape) -> None:
+        self.input_shape = input_shape
+        self.output_shape = output_shape
 
-        # Flatten the image
-        return input.flatten()
+    def forward(self, input):
+        return input.reshape(self.output_shape)
 
     def backward(self, gradients, learning_rate):
-        # Reshape the image
-        return gradients.reshape(self.original_shape)
+        return gradients.reshape(self.input_shape)

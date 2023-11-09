@@ -5,12 +5,14 @@ from .layers.convolution import Convolution
 from .layers.max_pooling import MaxPooling
 from .layers.soft_max import Softmax
 from .layers.reshape import Reshape
+from .layers.dense import Dense
 
 layers = [
     Convolution(12, 3, 3),  # 62*62*12
     MaxPooling(3),  # 20*20*12
-    Reshape(),
-    Softmax(20*20*12, 10)
+    Reshape((12, 20, 20), (20*20*12, 1)),
+    Dense(20*20*12, 10),
+    Softmax()
 ]
 
 
@@ -64,7 +66,7 @@ def train():
 
         accuracy, loss = 0, 0
 
-        print(f"Epoch #{epoch + 1} ----- ")
+        print(f"Epoch #{epoch + 1} ======================================")
 
         for i in range(len(x_train)):
             image = x_train[i]
@@ -74,11 +76,17 @@ def train():
                 image,
                 label,
                 layers,
-                0.015
+                0.02
             )
 
             loss += loss_on_image
             accuracy += accurate
 
+            if (i+1) % 100 == 0:
+                print(
+                    f"Iteration {i+1} | Avg loss on epoch {loss / (i+1)}")
+
+        print("=============================================")
         print(f"Achieved accuracy : {accuracy / 10} %")
         print(f"Average loss : {loss / 1000}")
+        print("=============================================")
