@@ -21,11 +21,11 @@ This CNN can be used to clasify land cover from satellite images from the [EuroS
 
 ## Results
 
-The model achieves an accuracy of 95,6% after 15 epochs
+The model achieves an accuracy of around 95% after 15 epochs
 
 ## Credits
 
-This implementation was inspirated by :
+This implementation was inspired by :
 
 - [TheIndependentCode](https://github.com/TheIndependentCode/Neural-Network)
 - [Riccardo Andreoni](https://github.com/andreoniriccardo)
