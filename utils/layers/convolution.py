@@ -7,13 +7,13 @@ class Convolution:
         self.kernel_size = kernel_size
         self.kernel_depth = kernel_depth
 
-        # Generate random filters of shape (kernel_num, kernel_size, kernel_size, colors).
-        self.kernels = np.random.randn(
+        # Generate random filters of shape (kernel_num, kernel_size, kernel_size, colors). and centering on zero
+        self.kernels = np.random.random((
             kernel_num,
             kernel_depth,
             kernel_size,
             kernel_size,
-        ) / (kernel_size**2)
+        )) - 0.5
 
     def get_forward_prop_output_shape(self):
         original_h, original_w, original_c = self.original.shape

@@ -1,4 +1,5 @@
 import numpy as np
+from datetime import datetime
 from .preprocess import INTERMEDIARY_FILE_PATH
 
 from .layers.convolution import Convolution
@@ -6,9 +7,11 @@ from .layers.max_pooling import MaxPooling
 from .layers.soft_max import Softmax
 from .layers.reshape import Reshape
 from .layers.dense import Dense
+from .layers.activations import HyperbolicTan
 
 layers = [
     Convolution(12, 3, 3),  # 62*62*12
+    HyperbolicTan(),
     MaxPooling(3),  # 20*20*12
     Reshape((12, 20, 20), (20*20*12, 1)),
     Dense(20*20*12, 10),
@@ -65,8 +68,10 @@ def train():
         y_train = np.array(y_train)[permutation][:1000]
 
         accuracy, loss = 0, 0
+        beginning = datetime.utcnow()
 
-        print(f"Epoch #{epoch + 1} ======================================")
+        print("=============================================")
+        print(f"Epoch #{epoch + 1}")
 
         for i in range(len(x_train)):
             image = x_train[i]
@@ -86,7 +91,10 @@ def train():
                 print(
                     f"Iteration {i+1} | Avg loss on epoch {loss / (i+1)}")
 
+        epoch_duration = datetime.utcnow() - beginning
+
         print("=============================================")
         print(f"Achieved accuracy : {accuracy / 10} %")
         print(f"Average loss : {loss / 1000}")
+        print(f"Epoch duration : {str(epoch_duration)}")
         print("=============================================")
