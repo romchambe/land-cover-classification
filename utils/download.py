@@ -1,39 +1,36 @@
+from os.path import isfile, join
 from urllib.request import urlretrieve
 from os.path import isdir, join
 from tqdm import tqdm
 from zipfile import ZipFile
 
-DATASET_URL = 'https://zenodo.org/records/7711810/files/EuroSAT_RGB.zip?download=1'
-ZIPPED_FILENAME = 'dataset.zip'
-DATA_DIR = 'EuroSAT_RGB'
 
+class DataLoader:
+    def __init__(self, data_url, target_file, unzipped_target):
+        self.loaded = isdir(join('data', unzipped_target))
+        self.progress = 0
+        self.data_url = data_url
+        self.target_file = target_file
 
-def report(progress: tqdm):
-    global progress_percent
-    progress_percent = 0
+    def report(self, progress_bar: tqdm):
+        def reporter(count: int, block_size: int, total: int):
+            current_percent = int(100*(count * block_size) / total)
 
-    def reporter(count: int, block_size: int, total: int):
-        global progress_percent
-        current_percent = int(100*(count * block_size) / total)
+            if (current_percent is not self.progress):
+                progress_bar.update(current_percent - self.progress)
+                self.progress = current_percent
 
-        if (current_percent is not progress_percent):
-            progress.update(current_percent - progress_percent)
-            progress_percent = current_percent
+        return reporter
 
-    return reporter
+    def download_and_extract(self):
+        with tqdm(total=100) as progress_bar:
+            urlretrieve(
+                self.data_url,
+                join('data', self.target_file),
+                self.report(progress_bar)
+            )
 
+        with ZipFile(join('data', self.target_file)) as archive:
+            archive.extractall('data')
 
-def check_data() -> bool:
-    return isdir(join('data', DATA_DIR))
-
-
-def download_data():
-    with tqdm(total=100) as progress_bar:
-        urlretrieve(
-            DATASET_URL,
-            join('data', ZIPPED_FILENAME),
-            report(progress_bar)
-        )
-
-    with ZipFile(join('data', ZIPPED_FILENAME)) as archive:
-        archive.extractall('data')
+        self.loaded = True

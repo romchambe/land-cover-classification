@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 from os import listdir
 from os.path import isfile, join
-from .download import download_data, check_data, DATA_DIR
+from .download import DataLoader
 
 LAND_COVER = [
     ['AnnualCrop', 0],
@@ -18,6 +18,9 @@ LAND_COVER = [
 ]
 
 INTERMEDIARY_FILE_PATH = "data/labelled_dataset.npz"
+DATA_URL = 'https://zenodo.org/records/7711810/files/EuroSAT_RGB.zip?download=1'
+ZIPPED_FILENAME = 'dataset.zip'
+UNZIPPED_DIR = 'EuroSAT_RGB'
 
 
 def image_to_array(path):
@@ -26,9 +29,11 @@ def image_to_array(path):
 
 
 def preprocess_data():
-    if (not check_data()):
+    loader = DataLoader(DATA_URL, ZIPPED_FILENAME, UNZIPPED_DIR)
+
+    if not loader.loaded:
         print('Dataset not available locally. Downloading...')
-        download_data()
+        loader.download_and_extract()
 
     print('Dataset is stored locally, proceeding...')
 
@@ -37,9 +42,12 @@ def preprocess_data():
 
     # Convert
     for land_cover_class, land_cover_code in LAND_COVER:
-        land_cover_directory = f'./data/{DATA_DIR}/{land_cover_class}'
+        land_cover_directory = f'./data/{UNZIPPED_DIR}/{land_cover_class}'
+
+        # We iterate over each file in each land cover directory
         for image_file_name in listdir(land_cover_directory):
             image_path = join(land_cover_directory, image_file_name)
+
             if (isfile(image_path)):
                 image_dataset.append(
                     np.array(image_to_array(image_path))
